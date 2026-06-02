@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:active_sg/models/announcement.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
