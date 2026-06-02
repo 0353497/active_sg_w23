@@ -1,0 +1,72 @@
+[
+    {
+        "date": "10/09/2022",
+		"title": "Early Closure of Facility",
+		"content": "Ang Mo Kio Swimming Complex will be closed at 2PM on 20 Sep for facilities cleaning.",
+        "type": "happening",
+        "read": false
+    },
+	{
+        "date": "10/09/2022",
+		"title": "Notice: Maintenance on 12/09/22 12am",
+		"content": "Services will be unavailable.",
+        "type": "system",
+        "read": false
+    },
+	{
+        "date": "01/09/2022",
+		"title": "Notice: Maintenance on 05/09/22 12am",
+		"content": "Services will be unavailable.",
+        "type": "system",
+        "read": true
+    },
+    {
+        "date": "01/09/2022",
+		"title": "New Facility Opening",
+		"content": "Join us at the new Active SG Gym @ Punggol on 10 Sep!",
+        "type": "happening",
+        "read": false
+    },
+	{
+        "date": "10/08/2022",
+		"title": "Notice: Maintenance on 12/08/22 12am",
+		"content": "Services will be unavailable.",
+        "type": "system",
+        "read": true	
+    },
+    {
+        "date": "10/08/2022",
+		"title": "New Facility Opening",
+		"content": "Join us at the new Active SG Gym @ Serangoon on 07 Aug!",
+        "type": "happening",
+        "read": true
+    },
+    {
+        "date": "10/07/2022",
+		"title": "New Facility Opening",
+		"content": "Join us at the new Active SG Gym @ Jurong on 15 Jul!",
+        "type": "happening",
+        "read": true
+    },
+	{
+        "date": "10/07/2022",
+		"title": "Notice: Maintenance on 12/07/22 12am",
+		"content": "Services will be unavailable.",
+        "type": "system",
+        "read": true
+    },
+		{
+        "date": "04/07/2022",
+		"title": "Notice: Maintenance on 05/07/22 12am",
+		"content": "Services will be unavailable.",
+        "type": "system"		,
+        "read": true
+    },
+    {
+        "date": "04/07/2022",
+		"title": "Early Closure of Facility",
+		"content": "Ang Mo Kio Swimming Complex will be closed at 2PM on 9 Jul for facilities cleaning.",
+        "type": "happening",
+        "read": true
+    }
+]
