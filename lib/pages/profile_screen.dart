@@ -1,8 +1,10 @@
 import 'package:active_sg/pages/onboarding_screen.dart';
 import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,6 +15,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   Uint8List? _profileImageBytes;
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _numberController = TextEditingController();
 
   Future<void> _pickProfileImage(ImageSource source) async {
     final pickedImage = await ImagePicker().pickImage(source: source);
@@ -30,6 +37,54 @@ class _ProfileScreenState extends State<ProfileScreen> {
     setState(() {
       _profileImageBytes = imageBytes;
     });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _addressController.dispose();
+    _numberController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    _emailController.text = prefs.getString('profile_email') ?? '';
+    _passwordController.text = prefs.getString('profile_password') ?? '';
+    _nameController.text = prefs.getString('profile_name') ?? '';
+    _addressController.text = prefs.getString('profile_address') ?? '';
+    _numberController.text = prefs.getString('profile_number') ?? '';
+    final imgString = prefs.getString('profile_image');
+    if (imgString != null && imgString.isNotEmpty) {
+      try {
+        _profileImageBytes = base64Decode(imgString);
+      } catch (_) {}
+    }
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _saveProfile() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('profile_email', _emailController.text);
+    await prefs.setString('profile_password', _passwordController.text);
+    await prefs.setString('profile_name', _nameController.text);
+    await prefs.setString('profile_address', _addressController.text);
+    await prefs.setString('profile_number', _numberController.text);
+    if (_profileImageBytes != null) {
+      await prefs.setString('profile_image', base64Encode(_profileImageBytes!));
+    }
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Profile saved locally')));
   }
 
   @override
@@ -63,7 +118,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             child: Form(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
-                spacing: 24,
                 children: [
                   InkWell(
                     onTap: () {
@@ -151,18 +205,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-                  TextFormField(decoration: InputDecoration(hintText: "email")),
                   TextFormField(
+                    controller: _emailController,
+                    decoration: InputDecoration(hintText: "email"),
+                  ),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
                     decoration: InputDecoration(hintText: "Password"),
                   ),
-                  TextFormField(decoration: InputDecoration(hintText: "Name")),
                   TextFormField(
+                    controller: _nameController,
+                    decoration: InputDecoration(hintText: "Name"),
+                  ),
+                  TextFormField(
+                    controller: _addressController,
                     decoration: InputDecoration(hintText: "Address"),
                   ),
                   TextFormField(
+                    controller: _numberController,
                     decoration: InputDecoration(hintText: "Number"),
                   ),
-                  OwnRedButton(onTap: () {}, text: "SAVE"),
+                  OwnRedButton(
+                    onTap: () async {
+                      await _saveProfile();
+                    },
+                    text: "SAVE",
+                  ),
                 ],
               ),
             ),
