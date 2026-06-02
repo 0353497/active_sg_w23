@@ -1,6 +1,8 @@
+import 'package:active_sg/models/booking.dart';
 import 'package:active_sg/pages/home_screen.dart';
 import 'package:active_sg/pages/info_screen.dart';
 import 'package:active_sg/pages/onboarding_screen.dart';
+import 'package:active_sg/services/json_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -14,7 +16,16 @@ class BookingsScreen extends StatefulWidget {
 
 class _BookingsScreenState extends State<BookingsScreen> {
   bool isFuture = true;
-  static final DateTime currentDate = DateTime(2022, 10);
+  static final DateTime currentDate = DateTime(2025, 10);
+
+  late List<Booking> bookings = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    init();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -68,159 +79,240 @@ class _BookingsScreenState extends State<BookingsScreen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: [
-              Row(
-                spacing: 48,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Flexible(
-                    child: SizedBox(
-                      height: 64,
-                      width: double.maxFinite,
-                      child: TextButton(
-                        style: ButtonStyle(
-                          elevation: WidgetStatePropertyAll(8),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
-                              side: BorderSide(
-                                color: Color(0xffDB3116),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          foregroundColor: WidgetStatePropertyAll(
-                            isFuture ? Colors.white : Color(0xffDB3116),
-                          ),
-                          backgroundColor: WidgetStatePropertyAll(
-                            isFuture ? Color(0xffDB3116) : Colors.white,
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isFuture = true;
-                          });
-                        },
-                        child: Text(
-                          "FUTURE",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  Flexible(
-                    child: SizedBox(
-                      height: 64,
-                      width: double.maxFinite,
-                      child: TextButton(
-                        style: ButtonStyle(
-                          elevation: WidgetStatePropertyAll(8),
-                          shape: WidgetStatePropertyAll(
-                            RoundedRectangleBorder(
-                              borderRadius: BorderRadiusGeometry.circular(8),
-                              side: BorderSide(
-                                color: Color(0xffDB3116),
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                          foregroundColor: WidgetStatePropertyAll(
-                            isFuture ? Color(0xffDB3116) : Colors.white,
-                          ),
-                          backgroundColor: WidgetStatePropertyAll(
-                            isFuture ? Colors.white : Color(0xffDB3116),
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            isFuture = false;
-                          });
-                        },
-                        child: Text(
-                          "Past",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              if (isFuture) EmptyPlaceHolderBookings(),
-              if (!isFuture)
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("No, of bookings"),
-                      SizedBox(
-                        width: double.maxFinite,
-                        height: 350,
-                        child: Stack(
-                          children: [
-                            Container(
-                              width: double.maxFinite,
-                              height: 300,
-                              color: Colors.white,
-                              child: Row(children: []),
-                            ),
-                            for (int i = 0; i < 3; i++)
-                              Align(
-                                alignment: Alignment(((i * .3) * 2) - 1, .6),
-                                child: Container(
-                                  height: 100,
-                                  width: 50,
-                                  color: Get.theme.primaryColor,
-                                ),
-                              ),
-                            for (int i = 0; i < 3; i++)
-                              Align(
-                                alignment: Alignment(((i * .3) * 2) - 1, .9),
-                                child: Text(
-                                  DateFormat("MMM yyyy").format(
-                                    currentDate.subtract(
-                                      Duration(days: 30 * i),
+          child: isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Column(
+                  children: [
+                    Row(
+                      spacing: 48,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        Flexible(
+                          child: SizedBox(
+                            height: 64,
+                            width: double.maxFinite,
+                            child: TextButton(
+                              style: ButtonStyle(
+                                elevation: WidgetStatePropertyAll(8),
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadiusGeometry.circular(
+                                      8,
+                                    ),
+                                    side: BorderSide(
+                                      color: Color(0xffDB3116),
+                                      width: 2,
                                     ),
                                   ),
-                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                                foregroundColor: WidgetStatePropertyAll(
+                                  isFuture ? Colors.white : Color(0xffDB3116),
+                                ),
+                                backgroundColor: WidgetStatePropertyAll(
+                                  isFuture ? Color(0xffDB3116) : Colors.white,
                                 ),
                               ),
-                            Align(
-                              alignment: Alignment(.9, .9),
-                              child: Text("Month"),
+                              onPressed: () {
+                                setState(() {
+                                  isFuture = true;
+                                });
+                              },
+                              child: Text(
+                                "FUTURE",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Flexible(
+                          child: SizedBox(
+                            height: 64,
+                            width: double.maxFinite,
+                            child: TextButton(
+                              style: ButtonStyle(
+                                elevation: WidgetStatePropertyAll(8),
+                                shape: WidgetStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                    borderRadius: BorderRadiusGeometry.circular(
+                                      8,
+                                    ),
+                                    side: BorderSide(
+                                      color: Color(0xffDB3116),
+                                      width: 2,
+                                    ),
+                                  ),
+                                ),
+                                foregroundColor: WidgetStatePropertyAll(
+                                  isFuture ? Color(0xffDB3116) : Colors.white,
+                                ),
+                                backgroundColor: WidgetStatePropertyAll(
+                                  isFuture ? Colors.white : Color(0xffDB3116),
+                                ),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  isFuture = false;
+                                });
+                              },
+                              child: Text(
+                                "Past",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 24,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (isFuture) EmptyPlaceHolderBookings(),
+                    if (!isFuture)
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text("No, of bookings"),
+                            SizedBox(
+                              width: double.maxFinite,
+                              height: 350,
+                              child: Stack(
+                                children: [
+                                  Container(
+                                    width: double.maxFinite,
+                                    height: 300,
+                                    color: Colors.white,
+                                    child: Row(children: []),
+                                  ),
+                                  for (int i = 0; i < 3; i++)
+                                    Align(
+                                      alignment: Alignment(
+                                        ((i * .3) * 2) - 1,
+                                        .6,
+                                      ),
+                                      child: Container(
+                                        height: 100,
+                                        width: 50,
+                                        color: Get.theme.primaryColor,
+                                      ),
+                                    ),
+                                  for (int i = 0; i < 3; i++)
+                                    Align(
+                                      alignment: Alignment(
+                                        ((i * .3) * 2) - 1,
+                                        .9,
+                                      ),
+                                      child: Text(
+                                        DateFormat("MMM yyyy").format(
+                                          currentDate.subtract(
+                                            Duration(days: 30 * i),
+                                          ),
+                                        ),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  Align(
+                                    alignment: Alignment(.9, .9),
+                                    child: Text("Month"),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Expanded(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: ListView.builder(
+                                  itemCount: bookings.length,
+                                  itemBuilder: (context, index) {
+                                    final Booking booking = bookings[index];
+                                    return SizedBox(
+                                      height: 100,
+                                      child: Card(
+                                        color: Get.theme.colorScheme.primary,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius:
+                                              BorderRadiusGeometry.circular(16),
+                                          side: BorderSide(
+                                            color: Get.theme.primaryColor,
+                                            width: 1,
+                                          ),
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.all(
+                                                8.0,
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Text(
+                                                    DateFormat(
+                                                      "d MMM yyy, H a",
+                                                    ).format(booking.dateTime),
+                                                    style: TextStyle(
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
+                                                  Icon(
+                                                    booking.icon,
+                                                    color: Colors.white,
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                            Expanded(
+                                              child: Container(
+                                                width: double.maxFinite,
+                                                color: Colors.white,
+                                                child: Padding(
+                                                  padding: const EdgeInsets.all(
+                                                    8.0,
+                                                  ),
+                                                  child: Text(booking.facility),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
                             ),
                           ],
                         ),
                       ),
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: ListView.builder(
-                            itemBuilder: (context, index) {
-                              return SizedBox(
-                                height: 80,
-                                child: Card(
-                                  color: Get.theme.colorScheme.primary,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  ],
                 ),
-            ],
-          ),
         ),
       ),
     );
+  }
+
+  void init() async {
+    final data = await JsonReader.readBookings();
+
+    data.sort(
+      (a, b) => a.dateTime.millisecondsSinceEpoch.compareTo(
+        b.dateTime.millisecondsSinceEpoch,
+      ),
+    );
+    bookings = data;
+    setState(() {
+      isLoading = false;
+    });
   }
 }
 

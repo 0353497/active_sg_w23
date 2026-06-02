@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class Booking {
@@ -12,6 +13,12 @@ class Booking {
   final String time;
   final String type;
   final String facility;
+  IconData get icon {
+    if (type == "Gym") {
+      return Icons.fitness_center;
+    }
+    return Icons.pool;
+  }
 
   DateTime get dateTime {
     try {
