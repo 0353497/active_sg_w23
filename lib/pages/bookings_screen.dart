@@ -6,6 +6,7 @@ import 'package:active_sg/services/json_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'dart:math' as math;
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -16,7 +17,24 @@ class BookingsScreen extends StatefulWidget {
 
 class _BookingsScreenState extends State<BookingsScreen> {
   bool isFuture = true;
-  static final DateTime currentDate = DateTime(2025, 10);
+
+  List<MapEntry<DateTime, int>> get bookingsByMonth {
+    final now = DateTime(2026, 1);
+    final startMonth = DateTime(now.year, now.month - 2, 1);
+    final months = List<DateTime>.generate(
+      3,
+      (i) => DateTime(startMonth.year, startMonth.month + i, 1),
+    );
+
+    return months.map((m) {
+      final count = bookings
+          .where(
+            (b) => b.dateTime.year == m.year && b.dateTime.month == m.month,
+          )
+          .length;
+      return MapEntry<DateTime, int>(m, count);
+    }).toList();
+  }
 
   late List<Booking> bookings = [];
   bool isLoading = true;
@@ -179,48 +197,77 @@ class _BookingsScreenState extends State<BookingsScreen> {
                             SizedBox(
                               width: double.maxFinite,
                               height: 350,
-                              child: Stack(
-                                children: [
-                                  Container(
-                                    width: double.maxFinite,
-                                    height: 300,
-                                    color: Colors.white,
-                                    child: Row(children: []),
-                                  ),
-                                  for (int i = 0; i < 3; i++)
-                                    Align(
-                                      alignment: Alignment(
-                                        ((i * .3) * 2) - 1,
-                                        .6,
+                              child: LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final monthlyBookings = bookingsByMonth;
+                                  final monthCount = 3;
+                                  final maxBookingCount = monthlyBookings
+                                      .map((entry) => entry.value)
+                                      .fold(0, math.max);
+
+                                  const labelBottom = 14.0;
+                                  const graphBottom = 56.0;
+                                  const maxBarHeight = 220.0;
+                                  final availableGraphWidth =
+                                      constraints.maxWidth * 0.82;
+                                  final segmentWidth = monthCount == 0
+                                      ? 0.0
+                                      : availableGraphWidth / monthCount;
+                                  final barWidth = monthCount == 0
+                                      ? 0.0
+                                      : math.min(50.0, segmentWidth * 0.62);
+
+                                  return Stack(
+                                    children: [
+                                      Positioned(
+                                        left: 0,
+                                        right: 0,
+                                        top: 0,
+                                        bottom: graphBottom,
+                                        child: Container(color: Colors.white),
                                       ),
-                                      child: Container(
-                                        height: 100,
-                                        width: 50,
-                                        color: Get.theme.primaryColor,
-                                      ),
-                                    ),
-                                  for (int i = 0; i < 3; i++)
-                                    Align(
-                                      alignment: Alignment(
-                                        ((i * .3) * 2) - 1,
-                                        .9,
-                                      ),
-                                      child: Text(
-                                        DateFormat("MMM yyyy").format(
-                                          currentDate.subtract(
-                                            Duration(days: 30 * i),
+                                      for (int i = 0; i < monthCount; i++)
+                                        Positioned(
+                                          left:
+                                              (segmentWidth * i) +
+                                              ((segmentWidth - barWidth) / 2),
+                                          bottom: graphBottom,
+                                          child: Container(
+                                            height: maxBookingCount == 0
+                                                ? 0
+                                                : math.max(
+                                                    0,
+                                                    (monthlyBookings[i].value /
+                                                            maxBookingCount) *
+                                                        maxBarHeight,
+                                                  ),
+                                            width: barWidth,
+                                            color: Get.theme.primaryColor,
                                           ),
                                         ),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
+                                      for (int i = 0; i < monthCount; i++)
+                                        Positioned(
+                                          left: segmentWidth * i,
+                                          width: segmentWidth,
+                                          bottom: labelBottom,
+                                          child: Text(
+                                            DateFormat(
+                                              "MMM yyyy",
+                                            ).format(monthlyBookings[i].key),
+                                            textAlign: TextAlign.center,
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
                                         ),
+                                      const Positioned(
+                                        right: 0,
+                                        bottom: labelBottom,
+                                        child: Text("Month"),
                                       ),
-                                    ),
-                                  Align(
-                                    alignment: Alignment(.9, .9),
-                                    child: Text("Month"),
-                                  ),
-                                ],
+                                    ],
+                                  );
+                                },
                               ),
                             ),
                             Expanded(
@@ -309,7 +356,17 @@ class _BookingsScreenState extends State<BookingsScreen> {
         b.dateTime.millisecondsSinceEpoch,
       ),
     );
-    bookings = data;
+
+    final now = DateTime(2026, 1);
+    final startInclusive = DateTime(now.year, now.month - 2, 1);
+    final endExclusive = DateTime(now.year, now.month + 1, 1);
+
+    bookings = data.where((b) {
+      final dt = b.dateTime;
+      return (dt.isAtSameMomentAs(startInclusive) ||
+              dt.isAfter(startInclusive)) &&
+          dt.isBefore(endExclusive);
+    }).toList();
     setState(() {
       isLoading = false;
     });
