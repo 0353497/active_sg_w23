@@ -1,5 +1,6 @@
 import 'package:active_sg/pages/announcements_screen.dart';
 import 'package:active_sg/pages/bookings_screen.dart';
+import 'package:active_sg/pages/info_screen.dart';
 import 'package:active_sg/pages/login_screen.dart';
 import 'package:active_sg/pages/onboarding_screen.dart';
 import 'package:active_sg/pages/profile_screen.dart';
@@ -183,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
             return;
           }
           if (value == 3) {
-            Get.to(() => BookingsScreen(), transition: Transition.fadeIn);
+            Get.to(() => InfoScreen(), transition: Transition.fadeIn);
             return;
           }
         },

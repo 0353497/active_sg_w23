@@ -1,7 +1,9 @@
 import 'package:active_sg/pages/home_screen.dart';
+import 'package:active_sg/pages/info_screen.dart';
 import 'package:active_sg/pages/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class BookingsScreen extends StatefulWidget {
   const BookingsScreen({super.key});
@@ -12,6 +14,7 @@ class BookingsScreen extends StatefulWidget {
 
 class _BookingsScreenState extends State<BookingsScreen> {
   bool isFuture = true;
+  static final DateTime currentDate = DateTime(2022, 10);
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +50,7 @@ class _BookingsScreenState extends State<BookingsScreen> {
             return;
           }
           if (value == 3) {
-            Get.to(() => BookingsScreen(), transition: Transition.fadeIn);
+            Get.to(() => InfoScreen(), transition: Transition.fadeIn);
             return;
           }
         },
@@ -150,7 +153,69 @@ class _BookingsScreenState extends State<BookingsScreen> {
                 ],
               ),
               if (isFuture) EmptyPlaceHolderBookings(),
-              if (!isFuture) SizedBox(),
+              if (!isFuture)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("No, of bookings"),
+                      SizedBox(
+                        width: double.maxFinite,
+                        height: 350,
+                        child: Stack(
+                          children: [
+                            Container(
+                              width: double.maxFinite,
+                              height: 300,
+                              color: Colors.white,
+                              child: Row(children: []),
+                            ),
+                            for (int i = 0; i < 3; i++)
+                              Align(
+                                alignment: Alignment(((i * .3) * 2) - 1, .6),
+                                child: Container(
+                                  height: 100,
+                                  width: 50,
+                                  color: Get.theme.primaryColor,
+                                ),
+                              ),
+                            for (int i = 0; i < 3; i++)
+                              Align(
+                                alignment: Alignment(((i * .3) * 2) - 1, .9),
+                                child: Text(
+                                  DateFormat("MMM yyyy").format(
+                                    currentDate.subtract(
+                                      Duration(days: 30 * i),
+                                    ),
+                                  ),
+                                  style: TextStyle(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            Align(
+                              alignment: Alignment(.9, .9),
+                              child: Text("Month"),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: ListView.builder(
+                            itemBuilder: (context, index) {
+                              return SizedBox(
+                                height: 80,
+                                child: Card(
+                                  color: Get.theme.colorScheme.primary,
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
             ],
           ),
         ),
